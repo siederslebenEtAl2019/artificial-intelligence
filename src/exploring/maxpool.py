@@ -26,5 +26,5 @@ class Testmaxpool(unittest.TestCase):
     def testCuda(self):
         t = torch.ones(2,2)
         s = t.to(device)
-        pass  # XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        pass
 
