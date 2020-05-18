@@ -7,7 +7,6 @@ import torch.nn as nn
 class TestLinear(unittest.TestCase):
 
     def testMM(self):
-
         n = 4  # number of measurements
         p = 2  # number of input features
         q = 3  # number of output features
@@ -27,6 +26,7 @@ class TestLinear(unittest.TestCase):
 
         # mm stands for matrix multiplication
         # b is automatically added to all rows
+        # two ways of multiplying matrices
         y = x.mm(w.t()) + b
         z = w.mm(x.t()).t() + b
         self.assertTrue(torch.equal(y, z))
@@ -50,15 +50,11 @@ class TestLinear(unittest.TestCase):
         x = torch.tensor([11., 12., 21., 22., 31., 32., 41., 42.])  # features
         x = x.view(x_shape)
 
-        # applying lin = Linear(2, 3) and checking the result
+        # applying lin = Linear(2, 3) and comparing to mm
         y = lin(x)
-
-        # this is what lin does
         z = x.mm(w.t()) + b  # (n x p) * (p x q)  + (n x q)
 
-        if not torch.equal(y, z):
-            raise Exception
-
+        self.assertTrue(torch.equal(y, z))
 
     def testBackward(self):
         n = 4  # number of measurements

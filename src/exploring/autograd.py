@@ -1,5 +1,9 @@
-import unittest
+# Johannes Siedersleben, QAware GmbH, Munich, Germany
+# 18/05/2020
 
+# Exploring autograd
+
+import unittest
 import torch
 
 
@@ -17,7 +21,7 @@ class Testautograd(unittest.TestCase):
         dz = f(x + dx) - f(x)
         self.assertAlmostEqual(dz.item(), dx.dot(x.grad).item(), places)
 
-    def testA(self):
+    def testScalar(self):
         """
         scalar --> scalar --> scalar
         This shows:
@@ -29,14 +33,11 @@ class Testautograd(unittest.TestCase):
 
         s = x ** 2
         t = x ** 3
-        y = s * t  # x ** 5
+        y = s * t  # x ** 5 == 1
 
         y.backward()
-        print('\n')
-        print(x.grad)  # 5 = 5 * x ** 4
-        print(y.grad)  # None
-        print(s.grad)  # None
-        print(t.grad)  # None
+        if x.grad != 5:  # 5 = 5 * x ** 4
+            raise Exception
 
         with torch.no_grad():
             x += 1
@@ -47,12 +48,10 @@ class Testautograd(unittest.TestCase):
         y = s * t  # x ** 5
 
         y.backward()
-        print(x.grad)  # 80
-        print(y.grad)  # None
-        print(s.grad)  # None
-        print(t.grad)  # None
+        if x.grad != 80:  # 80 = 5 * x ** 4
+            raise Exception
 
-    def test0(self):
+    def testScalarScalar(self):
         """
         scalar * scalar --> scalar
         """
@@ -64,14 +63,11 @@ class Testautograd(unittest.TestCase):
         v = s * t
 
         v.backward(x)
-        print('\n')
-        print(x.grad)  # 6
-        print(y.grad)  # 9
-        print(z.grad)  # 3
-        print(s.grad)  # None
-        print(t.grad)  # None
+        self.assertEqual(x.grad, 6)  # 6 = y + z
+        self.assertEqual(y.grad, 9)  # 9 = 2 * y + x + z
+        self.assertEqual(z.grad, 3)  # 3 = x + y
 
-    def test1(self):
+    def testVectorScalar(self):
         """
         vector * scalar --> vector
         """
@@ -83,7 +79,7 @@ class Testautograd(unittest.TestCase):
         z.backward()
         self.check(f, x)
 
-    def test2V(self):
+    def testVectorVector(self):
         """
         vector * vector --> scalar
         """
@@ -95,7 +91,7 @@ class Testautograd(unittest.TestCase):
         self.assertTrue(x.grad.equal(w))
         self.assertTrue(w.grad.equal(x))
 
-    def test2M(self):
+    def testMatrixMatrix(self):
         """
         matrix * matrix --> scalar
         """
@@ -115,7 +111,7 @@ class Testautograd(unittest.TestCase):
         # self.assertTrue(x.grad.equal(w))
         # self.assertTrue(w.grad.equal(x))
 
-    def test3(self):
+    def testMatrixVector(self):
         """
         matrix * vector --> vector
         """
@@ -257,7 +253,8 @@ class Testautograd(unittest.TestCase):
             printNode(x)
 
     def test9(self):
-        cuda = torch.device("cuda:0")
+        # cuda = torch.device("cuda:0")
+        cuda = torch.device("cpu")
         tf = torch.float
         eta = 0.001
         x0 = torch.ones((2, 4), device=cuda, dtype=tf)

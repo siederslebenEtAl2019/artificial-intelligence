@@ -1,6 +1,7 @@
-# Augmenting classes after creation
 # Johannes Siedersleben, QAware GmbH, Munich, Germany
 # 18/05/2020
+
+# Augmenting classes after creation
 
 
 class MyClass(object):      # an empty class
