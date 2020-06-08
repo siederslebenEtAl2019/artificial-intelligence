@@ -6,15 +6,15 @@ from torchtext import data
 
 class Field(object):
     """
-            Exploring torchtext.data.Field.
-            Field is function object which transforms strings into numeric vectors.
-            sample is a list of 3 sentences of length 14 or 15
-            chars contains all occurring characters (17 in this case)
-            f is a function object which stores the padding character and the ordering (batch_first=True)
-            f.build_vocab builds a dictionary that maps each char of chars to an integer
-            f.to_ints pads all sentences to the sam length and transforms each character to its
-            numerical equivalent. It returns a tensor of size len(sample) x maxlen = 3 x 15
-            """
+        Exploring torchtext.data.Field.
+        Field is function object which transforms strings into numeric vectors.
+        sample is a list of 3 sentences of length 14 or 15
+        chars contains all occurring characters (17 in this case)
+        f is a function object which stores the padding character and the ordering (batch_first=True)
+        f.build_vocab builds a dictionary that maps each char of chars to an integer
+        f.to_ints pads all sentences to the sam length and transforms each character to its
+        numerical equivalent. It returns a tensor of size len(sample) x maxlen = 3 x 15
+    """
     def __init__(self, chartext, device):
         blank = ' '
         self.device = device

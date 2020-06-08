@@ -21,63 +21,53 @@ class Testautograd(unittest.TestCase):
         dz = f(x + dx) - f(x)
         self.assertAlmostEqual(dz.item(), dx.dot(x.grad).item(), places)
 
-    def testScalar(self):
-        """
-        scalar --> scalar --> scalar
-        This shows:
-        * gradients along different paths are added
-        * each forward step allows one backward step.
-
-        """
-        x = torch.tensor(1., requires_grad=True)
-
-        s = x ** 2
-        t = x ** 3
-        y = s * t  # x ** 5 == 1
+    def test1(self):
+        x = torch.tensor([7], dtype=torch.float, requires_grad=True)
+        y = x ** 2
 
         y.backward()
-        if x.grad != 5:  # 5 = 5 * x ** 4
-            raise Exception
+        self.assertEqual(x.grad, 2 * x.data)
 
-        with torch.no_grad():
-            x += 1
-            x.grad.zero_()   # is mandatory
+    def test2(self):
+        x = torch.tensor([7], dtype=torch.float, requires_grad=True)
+        y = x ** 2
+        z = y ** 3  # = x ** 6
 
-        s = x ** 2
-        t = x ** 3
-        y = s * t  # x ** 5
-
-        y.backward()
-        if x.grad != 80:  # 80 = 5 * x ** 4
-            raise Exception
-
-    def testScalarScalar(self):
-        """
-        scalar * scalar --> scalar
-        """
-        x = torch.tensor(1., requires_grad=True)
-        y = torch.tensor(2., requires_grad=True)
-        z = torch.tensor(4., requires_grad=True)
-        s = x + y
-        t = y + z
-        v = s * t
-
-        v.backward(x)
-        self.assertEqual(x.grad, 6)  # 6 = y + z
-        self.assertEqual(y.grad, 9)  # 9 = 2 * y + x + z
-        self.assertEqual(z.grad, 3)  # 3 = x + y
-
-    def testVectorScalar(self):
-        """
-        vector * scalar --> vector
-        """
-        def f(x):
-            return 3 * x.dot(torch.tensor([1., 2., 3.]))
-
-        x = torch.tensor([3., 7., 11.], requires_grad=True)
-        z = f(x)
         z.backward()
-        self.check(f, x)
+        self.assertEqual(x.grad, 6 * x.data ** 5)
+
+    def test3(self):
+        x = torch.tensor([7], dtype=torch.float, requires_grad=True)
+        y = x ** 2
+        z = x ** 3
+        t = y * z  # = x ** 5
+
+        t.backward()
+        self.assertEqual(x.grad, 5 * x.data ** 4)
+
+    def test4(self):
+        x = torch.tensor([3., 7., 11.], requires_grad=True)
+        y = torch.tensor([1., 2., 3.], requires_grad=True)
+        z = 3 * x.dot(y)
+
+        z.backward()
+        self.assertTrue(x.grad.equal(3 * y))
+        self.assertTrue(y.grad.equal(3 * x))
+
+    def test5(self):
+        x = torch.tensor([3., 7., 11.], requires_grad=True)
+        w = torch.tensor(range(6), dtype=torch.float, requires_grad=True).view(2, 3)
+        y = w.mv(x)
+
+        z = torch.tensor([1., 1.])
+        y.backward(z)
+        xgrad = x.grad
+
+        x.grad.zero_()
+        y = w.mv(x)
+        s = z.dot(y)
+        s.backward()
+        self.assertTrue(x.grad.equal(xgrad))
 
     def testVectorVector(self):
         """
@@ -137,7 +127,7 @@ class Testautograd(unittest.TestCase):
         print(x.grad - xg1)
         print(w.grad - wg1)
 
-    def test4(self):
+    def test9(self):
         """
         matrix * vector --> vector
         """
@@ -163,7 +153,7 @@ class Testautograd(unittest.TestCase):
         self.assertTrue(x.grad.equal(w.t().mv(r)))  # x.grad = WT r : n x 1
         self.assertTrue(w.grad.equal(x.ger(r).t()))  # w.grad = (x outer r)T
 
-    def test5(self):
+    def test10(self):
         """
         matrix * matrix --> matrix
         """
@@ -252,7 +242,7 @@ class Testautograd(unittest.TestCase):
         for x in [w1, w2, t, loss]:
             printNode(x)
 
-    def test9(self):
+    def test11(self):
         # cuda = torch.device("cuda:0")
         cuda = torch.device("cpu")
         tf = torch.float

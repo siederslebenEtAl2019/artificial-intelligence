@@ -3,7 +3,6 @@ import unittest
 import torch
 import torch.nn as nn
 
-
 class TestLinear(unittest.TestCase):
 
     def testMM(self):

@@ -22,8 +22,8 @@ learning_rate = 0.001
 # device = torch.device("cpu")
 device = torch.device("cuda")
 
-DATA_PATH = "/samples"
-MODEL_STORE_PATH = "/models/"
+DATA_PATH = "test/samples"
+MODEL_STORE_PATH = "test/models/"
 
 # transforms to apply to the data
 trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
