@@ -1,4 +1,5 @@
 
+# https://adventuresinmachinelearning.com/convolutional-neural-networks-tutorial-in-pytorch/
 
 import torch
 import torchvision
@@ -12,17 +13,19 @@ from torch.utils.data import DataLoader
 
 # Hyperparameters
 num_epochs = 1
-batch_size = 5
+batch_size = 20
 learning_rate = 0.01
+
+# num_epochs = 5
+# num_classes = 10
+# batch_size = 100
+# learning_rate = 0.001
 
 # device = torch.device("cpu")
 device = torch.device("cuda")
 
 DATA_PATH = "/samples"
 MODEL_STORE_PATH = "/models/"
-
-# transforms to apply to the data
-trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
 
 
 class ConvNet(nn.Module):
@@ -52,6 +55,8 @@ class ConvNet(nn.Module):
 
 class Testmodel(unittest.TestCase):
     def testTrain(self):
+        # transforms to apply to the data
+        trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
 
         # MNIST dataset
         train_dataset = torchvision.datasets.MNIST(root=DATA_PATH, train=True, transform=trans, download=True)
@@ -68,7 +73,8 @@ class Testmodel(unittest.TestCase):
 
         # Train the model
         # total_step = len(train_loader)
-        total_step = 3
+        total_step = 10
+        num_iterations = 10
         loss_list = []
         acc_list = []
         for epoch in range(num_epochs):
@@ -82,7 +88,7 @@ class Testmodel(unittest.TestCase):
                 outputs = None
                 loss = None
 
-                for _ in range(5):
+                for _ in range(num_iterations):
                     outputs = model(images)
                     loss = criterion(outputs, labels)
                     # loss_list.append(loss.item())
@@ -98,13 +104,16 @@ class Testmodel(unittest.TestCase):
                 correct = (predicted == labels).sum().item()
                 acc_list.append(correct / total)
 
-                if (i + 1) % 1 == 0:
+                if (i + 1) % 100 == 0:
                     print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Accuracy: {:.2f}%'
                           .format(epoch + 1, num_epochs, i + 1, total_step, loss.item(),
                                   (correct / total) * 100))
         return model
 
     def testModel(self, model):
+        # transforms to apply to the data
+        trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+
         test_dataset = torchvision.datasets.MNIST(root=DATA_PATH, train=False, transform=trans)
         test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
@@ -114,6 +123,9 @@ class Testmodel(unittest.TestCase):
             correct = 0
             total = 0
             for images, labels in test_loader:
+                images = images.to(device)
+                labels = labels.to(device)
+
                 outputs = model(images)
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
@@ -123,3 +135,7 @@ class Testmodel(unittest.TestCase):
 
         # Save the model and plot
         torch.save(model.state_dict(), MODEL_STORE_PATH + 'conv_net_model.ckpt')
+
+    def testAll(self):
+        model = self.testTrain()
+        self.testModel(model)

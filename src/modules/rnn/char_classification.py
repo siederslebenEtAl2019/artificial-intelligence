@@ -164,7 +164,7 @@ def train(category_tensor, line_tensor, rnn):
 
 def loop(rnn):
     # generate n_iter training examples, randomly chosen from the data set
-    # apply train to each of them.
+    # apply trainxx to each of them.
 
     # n_iters = 100000
     n_iters = 100

@@ -7,7 +7,6 @@ import numpy as np
 from sklearn.covariance import empirical_covariance
 
 
-
 class TestBasics(unittest.TestCase):
     def testCovariance(self):
         X = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1],

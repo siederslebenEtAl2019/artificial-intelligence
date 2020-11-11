@@ -8,12 +8,29 @@ import torch
 import unittest
 from functools import reduce
 from operator import mul
+import numpy.linalg as LA
 
 class TestNewaxis(unittest.TestCase):
 
-    def test1(self):
+    def test0(self):
         # newaxis is an alias for None
         self.assertIs(np.newaxis, None)
+
+    def test1(self):
+        # dividing all rows of a matrix by a vector
+        # dividing all columns of a matrix by a vector
+        x = np.arange(6).reshape(2,3)
+        y = np.array([[4], [5]])
+        z = np.array([[2, 3, 4]])
+
+        print(x)
+        print(x / y)
+        print(x / z)
+
+    def testLA(self):
+        x = np.array(([1, 1], [2, 2]))
+        nx = np.array([LA.norm(x[i]) for i in range(x.shape[0])]).reshape(-1, 1)
+        print(nx)
 
     def test2(self):
         shape = (2, 2, 3)

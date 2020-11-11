@@ -1,10 +1,9 @@
 # Johannes Siedersleben, QAware GmbH, Munich, Germany
 # 18/05/2020
 
-# Exploring autograd
-
 import unittest
 import torch
+import torch.nn as nn
 
 
 def printNode(x):
@@ -21,29 +20,38 @@ class Testautograd(unittest.TestCase):
         dz = f(x + dx) - f(x)
         self.assertAlmostEqual(dz.item(), dx.dot(x.grad).item(), places)
 
+    def test0(self):
+        x = torch.tensor(7, dtype=torch.float, requires_grad=True)
+        x.backward()
+        self.assertEqual(x.grad, 1)
+
     def test1(self):
-        x = torch.tensor([7], dtype=torch.float, requires_grad=True)
+        x = torch.tensor(7, dtype=torch.float, requires_grad=True)
         y = x ** 2
 
         y.backward()
-        self.assertEqual(x.grad, 2 * x.data)
+        self.assertEqual(x.grad, 2 * x)
 
     def test2(self):
-        x = torch.tensor([7], dtype=torch.float, requires_grad=True)
+        x = torch.tensor(7, dtype=torch.float, requires_grad=True)
         y = x ** 2
         z = y ** 3  # = x ** 6
 
         z.backward()
-        self.assertEqual(x.grad, 6 * x.data ** 5)
+        self.assertEqual(x.grad, 6 * x ** 5)
 
     def test3(self):
-        x = torch.tensor([7], dtype=torch.float, requires_grad=True)
+        x = torch.tensor(7, dtype=torch.float, requires_grad=True)
         y = x ** 2
         z = x ** 3
         t = y * z  # = x ** 5
 
         t.backward()
-        self.assertEqual(x.grad, 5 * x.data ** 4)
+        self.assertEqual(x.grad, 5 * x ** 4)
+
+    def test3a(self):
+        module = nn.Sequential()
+
 
     def test4(self):
         x = torch.tensor([3., 7., 11.], requires_grad=True)
@@ -53,6 +61,21 @@ class Testautograd(unittest.TestCase):
         z.backward()
         self.assertTrue(x.grad.equal(3 * y))
         self.assertTrue(y.grad.equal(3 * x))
+
+    def test4a(self):
+        factor = torch.tensor([6., 9.])
+        x = torch.tensor([3., 4.], requires_grad=True)
+        y = torch.exp(x)
+        # y = torch.tensor([x[0] * x[1], x[0] / x[1]], requires_grad=True)
+        y.backward(torch.tensor([1., 0.]))
+        print(y.data)
+
+        y = torch.exp(x)
+        y.backward(torch.tensor([0., 1.]))
+        print(y.data)
+
+        # self.assertTrue(x.grad.equal(3 * y))
+        # self.assertTrue(y.grad.equal(3 * x))
 
     def test5(self):
         x = torch.tensor([3., 7., 11.], requires_grad=True)

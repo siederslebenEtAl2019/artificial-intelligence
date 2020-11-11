@@ -105,7 +105,7 @@ class BowClassification(object):
         return vec.view(1, -1)
 
     def testloop(self):
-        # Run on test data before we train, just to see a before-and-after
+        # Run on test data before we trainxx, just to see a before-and-after
         with torch.no_grad():
             for instance, label in test_data:
                 bow_vec = self.make_bow_vector(instance)

@@ -91,6 +91,10 @@ class TestLinear(unittest.TestCase):
         w = xd['weight']
         b = xd['bias']
 
+        print(lin.state_dict()['weight'])
+        print(lin.state_dict()['bias'])
+
+
         # applying lin = Linear(2, 3) with modified parameters and checking the result
         y = lin(x)
         if y is None:

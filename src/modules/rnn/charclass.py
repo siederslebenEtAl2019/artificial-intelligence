@@ -177,7 +177,7 @@ class Charclassification(object):
 
     def trainloop(self, n_iters, repetitions):
         # generate n_iter training examples, randomly chosen from the data set
-        # apply train to each of them.
+        # apply trainxx to each of them.
 
         all_losses = []
 

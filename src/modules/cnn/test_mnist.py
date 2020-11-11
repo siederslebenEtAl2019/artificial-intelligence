@@ -3,13 +3,17 @@
 # fast original, mit cuda
 # 29.4.2020
 #
-import time, torch, torchvision, unittest
-import torch.nn as nn
-from torchvision import transforms
-from torch.utils.data import DataLoader
+import time
+import torch
+import torchvision
+import unittest
 
-DATA_PATH = "/samples"
-MODEL_STORE_PATH = "/models/"
+import torch.nn as nn
+from torch.utils.data import DataLoader
+from torchvision import transforms
+
+DATA_PATH = "test/samples"
+MODEL_STORE_PATH = "test/models"
 
 # transforms to apply to the data
 trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
@@ -31,14 +35,22 @@ class ConvNet(nn.Module):
         self.fc1 = nn.Linear(7 * 7 * 64, 1000)
         self.fc2 = nn.Linear(1000, 10)
 
-    def forward(self, x):                   # (100, 1, 28, 28)
-        out = self.layer1(x)                # (100, 32, 14, 14) pooling
+    def forward(self, x):  # (100, 1, 28, 28)
+        out = self.layer1(x)  # (100, 32, 14, 14) pooling
         out = self.layer2(out)
         out = out.reshape(out.size(0), -1)
         out = self.drop_out(out)
         out = self.fc1(out)
         out = self.fc2(out)
         return out
+
+
+def makeTwoLayers(n, k1, k2):
+    return nn.Sequential(
+        nn.Linear(n, k1),
+        nn.Sigmoid(),
+        nn.Linear(k1, k2)
+    )
 
 
 def getHash(*args):
@@ -65,19 +77,19 @@ def train_mnist(data_size, num_epochs, batch_size, learning_rate, num_opt, devic
         model.cuda(device)
 
     # Loss and optimizer
-    criterion = nn.CrossEntropyLoss()
+    loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     outputs = None
     loss = None
 
     # Train the model
-    num_batches = len(train_loader)   # == len(data_set) / batch_size
+    num_batches = len(train_loader)  # == len(data_set) / batch_size
     protocol = [[data_size, num_epochs, batch_size, learning_rate, num_opt, device]]
 
     for epoch in range(num_epochs):
-        counter = 0        # counter number of processed entries
-        for i, (images, labels) in enumerate(train_loader):    # i in range(num_batches)
+        counter = 0  # counter number of processed entries
+        for i, (images, labels) in enumerate(train_loader):  # i in range(num_batches)
             counter += num_batches
             if counter >= data_size:
                 break
@@ -89,7 +101,7 @@ def train_mnist(data_size, num_epochs, batch_size, learning_rate, num_opt, devic
             for _ in range(num_opt):
                 # Run the forward pass
                 outputs = model(images)
-                loss = criterion(outputs, labels)
+                loss = loss(outputs, labels)
 
                 # Backprop and perform Adam optimisation
                 optimizer.zero_grad()
@@ -97,7 +109,7 @@ def train_mnist(data_size, num_epochs, batch_size, learning_rate, num_opt, devic
                 optimizer.step()
 
             # Track the accuracy
-            total = labels.size(0)   # == batch_size
+            total = labels.size(0)  # == batch_size
             _, predicted = torch.max(outputs.data, 1)
             accuracy = (predicted == labels).sum().item() / total
             protocol.append([epoch, i, loss.item(), accuracy])
@@ -106,7 +118,6 @@ def train_mnist(data_size, num_epochs, batch_size, learning_rate, num_opt, devic
 
 
 def test_mnist(batch_size, device, modelpath=None, model=None):
-
     test_dataset = torchvision.datasets.MNIST(root=DATA_PATH, train=False, transform=trans)
     test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
@@ -137,7 +148,6 @@ def test_mnist(batch_size, device, modelpath=None, model=None):
         return accuracy
 
 
-
 class TestMNIST(unittest.TestCase):
     def test1(self):
         data_size = 60000
@@ -151,7 +161,7 @@ class TestMNIST(unittest.TestCase):
         thishash = getHash(data_size, num_epochs, batch_size, learning_rate, num_opt, device)
         modelpath = MODEL_STORE_PATH + 'conv' + thishash + '.ckpt'
 
-        model = train_mnist(data_size, num_epochs, batch_size, learning_rate, num_opt, device)
+        model, protocol = train_mnist(data_size, num_epochs, batch_size, learning_rate, num_opt, device)
         torch.save(model.state_dict(), modelpath)
 
         batch_size = 10000

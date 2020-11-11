@@ -17,7 +17,7 @@ from sklearn.datasets import fetch_20newsgroups
 from sklearn import datasets
 
 import seaborn as sns
-import scipy
+
 
 class TestSklearn(unittest.TestCase):
     def test0(self):
@@ -48,10 +48,10 @@ class TestSklearn(unittest.TestCase):
         data = fetch_20newsgroups()
         categories = ['talk.religion.misc', 'soc.religion.christian',
                       'sci.space', 'comp.graphics']
-        train = fetch_20newsgroups(subset='train', categories=categories)
+        train = fetch_20newsgroups(subset='trainxx', categories=categories)
         test = fetch_20newsgroups(subset='test', categories=categories)
 
-        # print(train.data[5])
+        # print(trainxx.data[5])
 
         model = make_pipeline(TfidfVectorizer(), MultinomialNB())
 
